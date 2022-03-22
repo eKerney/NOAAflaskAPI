@@ -145,7 +145,7 @@ def monthlyNormalsPlots(df, station, year, month, wind, windGust):
         ]
     plt.legend(labelcolor='white', facecolor='#171c1f', handles=legend_elements, fancybox=True, borderpad=0.9, framealpha=0.4, loc='upper left', fontsize=8)
     plt.xticks(rotation = 90, fontsize=12) 
-    plt.title((f'{station} - Monthly Climate Normals  '), fontsize=24, color=txtC, pad=30, )
+    plt.title((f'{station} - Monthly Climate Normals  '), fontsize=20, color=txtC, pad=30, )
     ax.set_facecolor('#21272c')
     fig.patch.set_facecolor('#21272c')
     ax.tick_params(axis='y', colors=txtC)
