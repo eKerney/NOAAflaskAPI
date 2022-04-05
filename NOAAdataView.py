@@ -252,7 +252,7 @@ def dailyPlots(station, year, month, dfM):
     ax.set_ylim([0, 80])
 
     plt.savefig('plotMonWind.png')
-    return fig
+    #return fig
 
     # plot for daily temperature
     fig, ax = plt.subplots(figsize=(12,6.1))
@@ -279,9 +279,9 @@ def dailyPlots(station, year, month, dfM):
     ax.tick_params(axis='y', colors=txtC)
     ax.tick_params(axis='x', colors=txtC)
     ax.set_ylim([0, 120])
-#    with col2:
-#        st.pyplot(fig)
-    
+
+    plt.savefig('plotMonTemp.png')
+
     # plot for daily precipitation
     fig, ax = plt.subplots(figsize=(12,6))
     N = len(dfM.index)
@@ -312,6 +312,8 @@ def dailyPlots(station, year, month, dfM):
     ax.tick_params(axis='x', colors=txtC)
     ax2.tick_params(axis='y', colors=txtC)
     ax2.tick_params(axis='x', colors=txtC)
+
+    plt.savefig('plotMonPrecip.png')
 
     #format dataframe column headings
     c = dfM.columns

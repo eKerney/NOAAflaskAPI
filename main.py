@@ -1,4 +1,4 @@
-from flask import Flask, send_file
+from flask import Flask, send_file, render_template
 from flask_restful import Resource, Api, reqparse
 from flask_cors import CORS
 from NOAA import *
@@ -9,7 +9,7 @@ from NOAAdataView import *
 # import io
 # import pandas as pd
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="")
 api = Api(app)
 CORS(app)
 
@@ -50,7 +50,8 @@ class get_station_month_plot(Resource):
 
         #result = noaaMonthly.to_json(orient="split")
         #return month
-        return send_file('plotMonWind.png', mimetype='image/png')
+        #return send_file('plotMonWind.png', mimetype='image/png')
+        return app.send_static_file("index.html")
 
 class get_parse(Resource):
     def get(self):
@@ -62,10 +63,16 @@ class get_parse(Resource):
         month = args['month']
         return [month, station]
 
+class get_index(Resource):
+    def get(self):
+        return app.send_static_file("index.html")
+
+
 api.add_resource(status,'/')
 api.add_resource(get_station_year_plot, '/year/<station>')
 api.add_resource(get_station_month_plot, '/month')
 api.add_resource(get_parse, '/parse')
+api.add_resource(get_index, '/index')
 
 if __name__ == '__main__':
     app.run()
