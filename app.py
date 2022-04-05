@@ -24,4 +24,6 @@ def get_station(station: str):
     result = noaaMonthly.to_json(orient="split")
     return send_file('plot.png', mimetype='image/png')
 
+
+
 app.run()

@@ -195,174 +195,22 @@ def getDailyWindALL(df, y, s, dfSta):
             dfAWND.loc[dfAWND.shape[0]] = [mon[month],month, meanAWND]
             dfWSF5.loc[dfWSF5.shape[0]] = [mon[month],month, meanWSF5]
     return [dfAWND, dfWSF5]   
- 
-### DAILY NORMALS SECTION
-#@st.experimental_memo(suppress_st_warning=True)      
-def getDailyNormalsData(noaa, m, y, s):
-    
-    mon = {'JAN':'01','FEB':'02','MAR':'03','APR':'04','MAY':'05','JUN':'06','JUL':'07','AUG':'08','SEP':'09','OCT':'10','NOV':'11','DEC':'12'}
-    day = {'JAN':'01-31','FEB':'01-28','MAR':'01-31','APR':'01-30','MAY':'01-31','JUN':'01-30','JUL':'01-31','AUG':'01-31','SEP':'01-30','OCT':'01-31','NOV':'01-30','DEC':'01-31'}
-    sta = {'OK CITY W ROGERS APT':'USW00013967','PENDLETON AIRPORT':'USW00024155','RALEIGH AIRPORT NC':'USW00013722'}                                         
-    paramList = ['DLY-DUTR-NORMAL', 'DLY-DUTR-STDDEV',
-        'DLY-PRCP-PCTALL-GE001HI','DLY-PRCP-PCTALL-GE010HI','DLY-PRCP-PCTALL-GE050HI','DLY-PRCP-PCTALL-GE100HI',
-        'DLY-SNOW-PCTALL-GE001TI','DLY-SNOW-PCTALL-GE010TI','DLY-SNOW-PCTALL-GE030TI','DLY-SNOW-PCTALL-GE050TI','DLY-SNOW-PCTALL-GE100TI',
-        'DLY-SNWD-PCTALL-GE001WI','DLY-SNWD-PCTALL-GE003WI','DLY-SNWD-PCTALL-GE005WI','DLY-SNWD-PCTALL-GE010WI',
-        'DLY-TAVG-NORMAL','DLY-TAVG-STDDEV','DLY-TMAX-NORMAL','DLY-TMIN-NORMAL',
-        'MTD-PRCP-NORMAL','MTD-SNOW-NORMAL','YTD-PRCP-NORMAL','YTD-SNOW-NORMAL' ]
-        
-    noaa.stationDataParams('NORMAL_DLY', (f'GHCND:{sta[s]}'), (f'{2010}-{mon[m]}-{day[m][0:2]}') , (f'{2010}-{mon[m]}-{day[m][3:5]}'), 
-        1000, 'standard', paramList)
-    
-    return noaa
 
-#@st.experimental_memo(suppress_st_warning=True)
-def showDailyNormals(noaa, month, year, station):
-    # functions to filter whole dataframe to retrive only records with specified parameter, and perfrom conversion 
-    # format NOAA.df date attribute for hour and drop extraneous columns        
-    noaa.df['dayYear'] = noaa.df.apply(lambda d: (d['date'][8:16]), axis=1)
-    noaa.df = noaa.df.drop(['station','attributes','date'], axis=1)
-    # iterate through list of parameters and conversion expressions
-    paramList = [{'p':'DLY-DUTR-NORMAL', 'e':''},{'p':'DLY-DUTR-STDDEV', 'e':''},
-        {'p':'DLY-PRCP-PCTALL-GE001HI', 'e':''},{'p':'DLY-PRCP-PCTALL-GE010HI', 'e':''},{'p':'DLY-PRCP-PCTALL-GE050HI', 'e':''},{'p':'DLY-PRCP-PCTALL-GE100HI', 'e':''},
-        {'p':'DLY-SNOW-PCTALL-GE001TI', 'e':''},{'p':'DLY-SNOW-PCTALL-GE010TI', 'e':''},{'p':'DLY-SNOW-PCTALL-GE030TI', 'e':''},{'p':'DLY-SNOW-PCTALL-GE050TI', 'e':''},{'p':'DLY-SNOW-PCTALL-GE100TI','e':''},
-        {'p':'DLY-SNWD-PCTALL-GE001WI', 'e':''},{'p':'DLY-SNWD-PCTALL-GE003WI', 'e':''},{'p':'DLY-SNWD-PCTALL-GE005WI', 'e':''},{'p':'DLY-SNWD-PCTALL-GE010WI', 'e':''},
-        {'p':'DLY-TAVG-NORMAL', 'e':''},{'p':'DLY-TAVG-STDDEV', 'e':'*5'},{'p':'DLY-TMAX-NORMAL', 'e':''},{'p':'DLY-TMIN-NORMAL', 'e':''},
-        {'p':'MTD-PRCP-NORMAL', 'e':''},{'p':'MTD-SNOW-NORMAL', 'e':''},{'p':'YTD-PRCP-NORMAL', 'e':''},{'p':'YTD-SNOW-NORMAL', 'e':''}]
-    dfClean = getMergedDF(noaa.df, paramList)
-    dailyNormalsPlots(dfClean, station , year, month)
-
-#@st.experimental_memo(suppress_st_warning=True)
-def dailyNormalsPlots(df, station, year, month):
-    # Final dataframe cleaning before plotting
-    df['dayYear'] = df.apply(lambda d: (d['dayYear'][0:2]), axis=1)
-    #df['dayYear'] = noaa.df.apply(lambda d: (d['dayYear'][8:10]), axis=1)
-    df.drop(df.tail(1).index,inplace = True)
-#    st.write(f'<h4 style="text-align:center;margin-top:-30px;">Daily Normals Weather Data</h4>', unsafe_allow_html=True)
-    WSF5c,WSF5e,WSF2c,WSF2e,AWNDc = '#1bab6b','#00542f','#72ab92','#00703f','#00ff8f'
-    txtC = '#575757'
-    # plot for daily precip percentiles
-    # plot for hourly cloud coverage
-    fig, ax = plt.subplots(figsize=(12,6))
-    N = len(df.index)
-    ind = np.arange(N) 
-    width = 0.4
-    Pc, Pe, Sc, Se = '#006be6','#001a38','#5d6875','#22262b'
-    line1 = ax.plot(ind+width, df['DLY-PRCP-PCTALL-GE001HI'], color = 'red', linewidth=3.0, alpha=0.7)
-    line2 = ax.plot(ind+width, df['DLY-PRCP-PCTALL-GE010HI'], color = 'orange', linewidth=3.0, alpha=0.7)
-    line3 = ax.plot(ind+width, df['DLY-PRCP-PCTALL-GE050HI'], color = 'yellow', linewidth=3.0, alpha=0.7)
-    line4 = ax.plot(ind+width, df['DLY-PRCP-PCTALL-GE100HI'], color = 'green', linewidth=3.0, alpha=0.7)
-    plt.ylabel('%', fontsize=12)
-    plt.xticks(ind+width/2,df['dayYear'])
-    legend_elements = [
-        Line2D([0], [0], color='red', lw=3, label='DLY-PRCP-PCTALL-GE001HI'),
-        Line2D([0], [0], color='orange', lw=3, label='DLY-PRCP-PCTALL-GE010HI'),
-        Line2D([0], [0], color='yellow', lw=3, label='DLY-PRCP-PCTALL-GE050HI'),
-        Line2D([0], [0], color='green', lw=3, label='DLY-PRCP-PCTALL-GE100HI'),
-        ]
-    plt.legend(labelcolor='white', facecolor='#171c1f', handles=legend_elements, fancybox=True, borderpad=0.9, framealpha=0.4, loc='upper right', fontsize=8)
-    plt.xticks(rotation = 90, fontsize=10) 
-    plt.title((f'Probability of Precip >= 0.01 in for 29-day windows - {month}'), fontsize=20, color=txtC, pad=30, )
-    plt.gca().spines['top'].set_visible(False)
-    plt.gca().spines['right'].set_visible(False)
-    plt.gca().spines['bottom'].set_visible(False)
-
-    #ax.set_ylim([0, 100])
-#    col1, col2 = st.columns([1,1])
-#    with col1:
-#        st.pyplot(fig)
-    
-    # plot for hourly cloud coverage
-    fig, ax = plt.subplots(figsize=(12,6))
-    N = len(df.index)
-    ind = np.arange(N) 
-    width = 0.4
-    Pc, Pe, Sc, Se = '#006be6','#001a38','#5d6875','#22262b'
-    line1 = ax.plot(ind+width, df['DLY-PRCP-PCTALL-GE001HI'], color = 'red', linewidth=3.0, alpha=0.7)
-    line2 = ax.plot(ind+width, df['DLY-PRCP-PCTALL-GE010HI'], color = 'orange', linewidth=3.0, alpha=0.7)
-    line3 = ax.plot(ind+width, df['DLY-PRCP-PCTALL-GE050HI'], color = 'yellow', linewidth=3.0, alpha=0.7)
-    line4 = ax.plot(ind+width, df['DLY-PRCP-PCTALL-GE100HI'], color = 'green', linewidth=3.0, alpha=0.7)
-    plt.ylabel('%', fontsize=12)
-    plt.xticks(ind+width/2,df['dayYear'])
-    legend_elements = [
-        Line2D([0], [0], color='red', lw=3, label='DLY-PRCP-PCTALL-GE001HI'),
-        Line2D([0], [0], color='orange', lw=3, label='DLY-PRCP-PCTALL-GE010HI'),
-        Line2D([0], [0], color='yellow', lw=3, label='DLY-PRCP-PCTALL-GE050HI'),
-        Line2D([0], [0], color='green', lw=3, label='DLY-PRCP-PCTALL-GE100HI'),
-        ]
-    plt.legend(labelcolor='white', facecolor='#171c1f', handles=legend_elements, fancybox=true, borderpad=0.9, framealpha=0.4, loc='upper right', fontsize=8)(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
-    plt.xticks(rotation = 90, fontsize=10) 
-    plt.title((f'Probability of Precip >= 0.01 in for 29-day windows - {month}'), fontsize=20, color=txtC, pad=30, )
-    plt.gca().spines['top'].set_visible(False)
-    plt.gca().spines['right'].set_visible(False)
-    plt.gca().spines['bottom'].set_visible(False)
-    #ax.set_ylim([0, 100])
-#    with col2:
-#        st.pyplot(fig)
-    
-    # plot daily temperature normals
-    fig, ax = plt.subplots(figsize=(12,6.1))
-    N = len(df.index)
-    ind = np.arange(N) 
-    width = 0.4
-    mic, mie, mac, mae, lc = '#188bad','#0c303b','#fc6603','#662900','#4903fc' 
-    bar1 = ax.bar(ind, df['DLY-TMAX-NORMAL'], width, color=mac, edgecolor=mae, linewidth=1, alpha=0.5)
-    bar2 = ax.bar(ind+width, df['DLY-TMIN-NORMAL'], width, color = mic, edgecolor=mie, linewidth=1, alpha=0.5)
-    #bar2 = ax.bar(ind, df['DLY-TAVG-STDDEV'], width, color = mic, edgecolor=mie, linewidth=1, alpha=0.7)
-    line2 = ax.plot(ind+width, df['DLY-TAVG-NORMAL'], color = 'red', linewidth=3.0, alpha=0.5)
-    line1 = ax.plot(ind+width, df['DLY-TAVG-STDDEV'], color = lc, linewidth=3.0, alpha=0.7)
-    plt.ylabel('F',fontsize=12)
-    plt.xticks(ind+width/2,df['dayYear'])
-    legend_elements = [Patch(facecolor=mac, edgecolor=mae, label='Daily Avg Temp Max'),
-        Patch(facecolor=mic, edgecolor=mae, label='Daily Avg Temp Min'),
-        Line2D([0], [0], color='red', lw=3, label='Daily Avg Temp '),
-        Line2D([0], [0], color=lc, lw=3, label='Daily Avg Temp Standard Dev.(x * 0.5)')]
-    plt.legend(labelcolor='white', facecolor='#171c1f', handles=legend_elements, fancybox=true, borderpad=0.9, framealpha=0.4, loc='upper right', fontsize=8)(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
-    plt.xticks(rotation = 90, fontsize=10) 
-    plt.title((f'{station} - DAILY-TEMPERATURE-NORMALS - {month}'), fontsize=20, color='#575757',pad=30)
-    plt.gca().spines['top'].set_visible(False)
-    plt.gca().spines['right'].set_visible(False)
-    plt.gca().spines['bottom'].set_visible(False)
-    ax.set_ylim([0, 100])
-#    cl1, cl2 = st.columns([1,1])
-#    with cl1:
-#        st.pyplot(fig)
-    
-    # plot daily temperature normals
-    fig, ax = plt.subplots(figsize=(12,6.1))
-    N = len(df.index)
-    ind = np.arange(N) 
-    width = 0.4
-    mic, mie, mac, mae, lc = '#188bad','#0c303b','#fc6603','#662900','#4903fc' 
-    #bar1 = ax.bar(ind, df['DLY-TMAX-NORMAL'], width, color=mac, edgecolor=mae, linewidth=1, alpha=0.5)
-    #bar2 = ax.bar(ind+width, df['DLY-TMIN-NORMAL'], width, color = mic, edgecolor=mie, linewidth=1, alpha=0.5)
-    #bar2 = ax.bar(ind, df['DLY-TAVG-STDDEV'], width, color = mic, edgecolor=mie, linewidth=1, alpha=0.7)
-    line2 = ax.plot(ind+width, df['DLY-DUTR-NORMAL'], color = 'red', linewidth=3.0, alpha=0.5)
-    line1 = ax.plot(ind+width, df['DLY-DUTR-STDDEV'], color = lc, linewidth=3.0, alpha=0.7)
-    plt.ylabel('F',fontsize=12)
-    plt.xticks(ind+width/2,df['dayYear'])
-    legend_elements = [
-        Line2D([0], [0], color='red', lw=3, label='Avg Daily Temp Range Std Dev.'),
-        Line2D([0], [0], color=lc, lw=3, label='Daily Avg Temp Standard Dev.')]
-    plt.legend(labelcolor='white', facecolor='#171c1f', handles=legend_elements, fancybox=true, borderpad=0.9, framealpha=0.4, loc='upper right', fontsize=8)(handles=legend_elements, fancybox=True, borderpad=0.7, framealpha=0.4, loc='upper right')
-    plt.xticks(rotation = 90, fontsize=10) 
-    plt.title((f'{station} - DAILY DIURNAL TEMPERATURE RANGE - {month}'), fontsize=20, color='#575757',pad=30)
-    plt.gca().spines['top'].set_visible(False)
-    plt.gca().spines['right'].set_visible(False)
-    plt.gca().spines['bottom'].set_visible(False)
-    #ax.set_ylim([0, 100])
-#    with cl2:
-#        st.pyplot(fig)
 
 
 ### DAILY DATA SECTION
 #@st.experimental_memo(suppress_st_warning=True, show_spinner=False) 
-def getDailyData(_noaa, m, y, s):
+def getDailyData(_noaa, m, y, s, dfSta):
     mon = {'JAN':'01','FEB':'02','MAR':'03','APR':'04','MAY':'05','JUN':'06','JUL':'07','AUG':'08','SEP':'09','OCT':'10','NOV':'11','DEC':'12'}
     day = {'JAN':'01-31','FEB':'01-28','MAR':'01-31','APR':'01-30','MAY':'01-31','JUN':'01-30','JUL':'01-31','AUG':'01-31','SEP':'01-30','OCT':'01-31','NOV':'01-30','DEC':'01-31'}
     sta = {'OK CITY W ROGERS APT':'USW00013967','PENDLETON AIRPORT':'USW00024155','RALEIGH AIRPORT NC':'USW00013722'}                                         
-    
+    # added for all stations API
+    s2 = dfSta.loc[dfSta['desc'] == s, ['id']]
+    sta = s2.iat[0,0]
+    print (f'sta = {sta}')
+    # 
     paramList = ['AWND','PRCP','SNOW','TAVG','TMAX','TMIN','WSF5','WSF2']
-    df = _noaa.stationDataParams('GHCND', (f'GHCND:{sta[s]}'), (f'{y}-{mon[m]}-{day[m][0:2]}') , (f'{y}-{mon[m]}-{day[m][3:5]}'), 1000, '', paramList)
+    df = _noaa.stationDataParams('GHCND', (f'GHCND:{sta}'), (f'{y}-{mon[m]}-{day[m][0:2]}') , (f'{y}-{mon[m]}-{day[m][3:5]}'), 1000, '', paramList)
     return df
 
 def showDaily(df, station, year, month):
@@ -376,9 +224,6 @@ def showDaily(df, station, year, month):
     dailyPlots(station, year, month, dfClean)
 
 def dailyPlots(station, year, month, dfM):
-#    st.write(f'<h4 style="text-align:center;margin:-40px;">Daily Weather Data - {station}</h4>', unsafe_allow_html=True)
-    # column layout for side by side charts
-    col1, col2 = st.columns([1,1])
     txtC = 'white'
     # plot for daily wind speed
     fig, ax = plt.subplots(figsize=(12,6))
@@ -405,8 +250,9 @@ def dailyPlots(station, year, month, dfM):
     ax.tick_params(axis='y', colors=txtC)
     ax.tick_params(axis='x', colors=txtC)
     ax.set_ylim([0, 80])
-#    with col1:
-#        st.pyplot(fig)
+
+    plt.savefig('plotMonWind.png')
+    return fig
 
     # plot for daily temperature
     fig, ax = plt.subplots(figsize=(12,6.1))
