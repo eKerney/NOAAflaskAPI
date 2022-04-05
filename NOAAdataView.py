@@ -226,7 +226,7 @@ def showDaily(df, station, year, month):
 def dailyPlots(station, year, month, dfM):
     txtC = 'white'
     # plot for daily wind speed
-    fig, ax = plt.subplots(figsize=(12,6))
+    fig, ax = plt.subplots(figsize=(14,6))
     N = len(dfM.index)
     ind = np.arange(N) 
     width = 0.4
@@ -255,7 +255,7 @@ def dailyPlots(station, year, month, dfM):
     #return fig
 
     # plot for daily temperature
-    fig, ax = plt.subplots(figsize=(12,6.1))
+    fig, ax = plt.subplots(figsize=(14,6))
     N = len(dfM.index)
     ind = np.arange(N) 
     width = 0.4
@@ -283,7 +283,7 @@ def dailyPlots(station, year, month, dfM):
     plt.savefig('plotMonTemp.png')
 
     # plot for daily precipitation
-    fig, ax = plt.subplots(figsize=(12,6))
+    fig, ax = plt.subplots(figsize=(14,6))
     N = len(dfM.index)
     ind = np.arange(N) 
     width = 0.4
